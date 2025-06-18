@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0         # needed if you later fetch other branches
+          fetch-depth: 0         # needed to switch/fetch branches
 
       # 2. Generate the snake animations
       - name: Generate GitHub Contributions Snake Animations
@@ -34,46 +34,52 @@ jobs:
       # 3. Debug: ensure files got written
       - name: List dist contents
         run: |
-          echo "==== dist directory ===="
+          echo "---- dist directory contents ----"
           ls -al dist
 
-      # 4. Configure Git (so commits have a user)
+      # 4. Configure Git (so commits have a user identity)
       - name: Set Git user
         run: |
+          echo "---- configuring git user ----"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # 5. Fetch (and/or create) output branch, replace contents, commit & push
-      - name: Publish to output branch manually
+      # 5. Publish to output branch with verbose debug
+      - name: Publish to output branch (manual)
         env:
           GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          # Add remote with auth
-          git remote remove deploy 2>/dev/null || true
+          set -eux  # fail fast, print each command
+
+          echo "---- adding remote 'deploy' ----"
+          git remote remove deploy || true
           git remote add deploy https://x-access-token:${GIT_TOKEN}@github.com/${{ github.repository }}.git
 
-          # Try to fetch the output branch
+          echo "---- checking if 'output' branch exists remotely ----"
           if git ls-remote --exit-code --heads deploy output; then
+            echo "→ 'output' exists, fetching it"
             git fetch deploy output
+            echo "→ checking out 'output'"
             git checkout output
           else
+            echo "→ 'output' does not exist, creating orphan"
             git checkout --orphan output
           fi
 
-          # Clean out old files
+          echo "---- cleaning out old files ----"
           git rm -rf . || true
 
-          # Copy in newly generated files
+          echo "---- copying new dist/ files into repo root ----"
           cp -R dist/. .
 
-          # If there are changes, commit them
+          echo "---- checking for changes ----"
           if git status --porcelain | grep .; then
+            echo "→ changes detected, staging & committing"
             git add .
             git commit -m "Update snake animation [skip ci]"
           else
-            echo "No changes to commit"
+            echo "→ no changes to commit"
           fi
 
-          # Force-push the branch
+          echo "---- force-pushing to output ----"
           git push deploy HEAD:output --force

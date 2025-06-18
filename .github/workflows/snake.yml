@@ -1,17 +1,11 @@
 name: GitHub Snake Game
 
 on:
-  # Schedule the workflow to run daily at midnight UTC
   schedule:
-    - cron: "0 0 * * *"
-
-  # Allow manual triggering of the workflow
-  workflow_dispatch:
-
-  # Trigger the workflow on pushes to the main branch
+    - cron: "0 0 * * *"        # daily at midnight UTC
+  workflow_dispatch:            # manual trigger
   push:
-    branches:
-      - main
+    branches: [ main ]          # on push to main
 
 jobs:
   generate:
@@ -19,17 +13,17 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout Repository
+      # 1. Checkout the repo (full history)
+      - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0         # needed if you later fetch other branches
 
-      # Step 2: Generate the snake animations
+      # 2. Generate the snake animations
       - name: Generate GitHub Contributions Snake Animations
         uses: Platane/snk@v3
         with:
-          # GitHub username to generate the animation for
           github_user_name: ${{ github.repository_owner }}
-          # Define the output files and their configurations
           outputs: |
             dist/github-snake.svg
             dist/github-snake-dark.svg?palette=github-dark
@@ -37,18 +31,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Debug - List the output directory
-      - name: Debug dist contents
+      # 3. Debug: ensure files got written
+      - name: List dist contents
         run: |
-          echo "Contents of dist directory:"
+          echo "==== dist directory ===="
           ls -al dist
 
-      # Step 4: Deploy the generated files to the 'output' branch
-      - name: Deploy to Output Branch
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: output
-          commit_message: "Update snake animation [skip ci]"
-          force_orphan: true
+      # 4. Configure Git (so commits have a user)
+      - name: Set Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # 5. Fetch (and/or create) output branch, replace contents, commit & push
+      - name: Publish to output branch manually
+        env:
+          GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          # Add remote with auth
+          git remote remove deploy 2>/dev/null || true
+          git remote add deploy https://x-access-token:${GIT_TOKEN}@github.com/${{ github.repository }}.git
+
+          # Try to fetch the output branch
+          if git ls-remote --exit-code --heads deploy output; then
+            git fetch deploy output
+            git checkout output
+          else
+            git checkout --orphan output
+          fi
+
+          # Clean out old files
+          git rm -rf . || true
+
+          # Copy in newly generated files
+          cp -R dist/. .
+
+          # If there are changes, commit them
+          if git status --porcelain | grep .; then
+            git add .
+            git commit -m "Update snake animation [skip ci]"
+          else
+            echo "No changes to commit"
+          fi
+
+          # Force-push the branch
+          git push deploy HEAD:output --force

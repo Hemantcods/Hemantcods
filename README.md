@@ -11,8 +11,12 @@
 
 
 
-<div align="center">
-  <img src="https://skillicons.dev/icons?i=js,html,css,react,py,pytorch,vite,mongodb,wasm)](https://skillicons.dev" height="60" alt="typescript logo"  />
+<div align="center" >
+  <img src="https://skillicons.dev/icons?i=js,html,css,tailwind,py,pytorch,vite,wasm)](https://skillicons.dev" height="60" alt="typescript logo"  />
+  <img width="12" />
+</div>  
+<div align="center" >
+  <img src="https://skillicons.dev/icons?i=mongodb,express,react,nodejs,wasm)](https://skillicons.dev" height="60" alt="typescript logo"  />
   <img width="12" />
 </div>  
   

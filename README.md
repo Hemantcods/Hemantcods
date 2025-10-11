@@ -3,7 +3,7 @@
 
 ###
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=Hemantcods&show_icons=true&theme=transparent" height="175" alt="stats graph"  />
+  <img src="https://github-readme-stats.vercel.app/api?username=Hemantcods&show_icons=true&theme=dark" height="175" alt="stats graph"  />
   <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Hemantcods&layout=compact&theme=dark" height="175" alt="languages graph"  />
 </div>
 

@@ -2,8 +2,8 @@
 
 ###
 <div align="center">
-  <img src="https://github-stats-three-psi.vercel.app/" height="175" alt="stats graph"  />
-  <img src="https://github-stats-three-psi.vercel.app/" height="175" alt="stats graph" height="175" alt="languages graph"  />
+  <img src="https://github-stats-three-psi.vercel.app/stats/hemantcods" height="175" alt="stats graph"  />
+  <img src="https://github-stats-three-psi.vercel.app/hemant/cods" height="175" alt="stats graph" height="175" alt="languages graph"  />
 </div>
 
 ###
